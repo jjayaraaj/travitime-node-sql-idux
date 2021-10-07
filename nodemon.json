@@ -1,0 +1,10 @@
+{
+  "env": {
+    "JWT_KEY": "travitime_JWT_#654321!",
+    "SQL_USER": "root",
+    "SQL_PASS": "",
+    "SQL_DB": "dyknode",
+    "DIALECT": "mysql",
+    "HOST": "localhost"
+  }
+}
