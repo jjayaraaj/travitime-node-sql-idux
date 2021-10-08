@@ -35,6 +35,8 @@ exports.loginCtrl = [
       name: operator.name,
       expiresIn: expiresIn,
       role: "operator",
+      uniqueOperatorId: operator.uniqueOperatorId,
+      company: operator.company,
     };
 
     const token = jwt.sign(operatorDetail, process.env.JWT_KEY);

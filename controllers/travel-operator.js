@@ -148,8 +148,8 @@ exports.travelRegisterCtrl = [
         service: "gmail",
         port: 25,
         auth: {
-          user: "jjayaraaj@gmail.com",
-          pass: "Pattani@21",
+          user: "xxxx@gmail.com",
+          pass: "xxxxxxx",
         },
         tls: {
           rejectUnauthorized: false,
