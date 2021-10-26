@@ -10,13 +10,16 @@
   "author": "idux",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.23.0",
     "bcrypt": "^5.0.1",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
+    "form-data": "^4.0.0",
     "joi": "^17.4.0",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.2.5",
     "nodemailer": "^6.6.3",
+    "nodemailer-express-handlebars": "^4.0.0",
     "otp-generator": "^2.0.1",
     "sequelize": "^6.6.2"
   }

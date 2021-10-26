@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const MailConfig = require('../email/emailClient');
+const hbs = require('nodemailer-express-handlebars');
 
 const asyncMiddleware = require("../middleware/asyncMiddleware");
 const operatorMiddleware = require("../middleware/operator");
@@ -11,6 +13,8 @@ const TravelOperator = require("./../models/travel-operators");
 const { ErrorHandler } = require("./../util/error");
 const sequelize = require("../util/database");
 const operator = require("../middleware/operator");
+
+const googleApiSrv = require("../network/apiService/googleApi");
 
 exports.travelRegisterCtrl_old = [
   asyncMiddleware(async (req, res, next) => {
@@ -84,6 +88,20 @@ exports.travelRegisterCtrl = [
     const phone = req.body.phone;
     const company = req.body.company;
     const name = req.body.name;
+    const recaptchaToken = req.body.recaptchaToken;
+    const params={
+      response : recaptchaToken,
+      secret : "6LdYm8UcAAAAABw1w9IUaNMIf2BLeJnUGFpe2SMz"
+    }
+    const postBody = new URLSearchParams(params);
+    const recaptchaRes = await googleApiSrv.verifyRecaptchaToken(postBody);
+    console.log('AAAAAAAAAAAAAAA');
+    console.log(recaptchaRes);
+    if(!(recaptchaRes.data.success))
+      throw new ErrorHandler(
+        400,
+        "Google reCaptcha failed"
+      );
     // res.send(req.body.email);
     // return;
     const user = await TravelOperator.findOne({
@@ -143,36 +161,10 @@ exports.travelRegisterCtrl = [
       //req.session.operator = userInsert;
       //res.status(200).send("created");
       //create reusable transporter object using the default SMTP transport
-      let transporter = nodemailer.createTransport({
-        //host: 'mail.travitime.com',
-        service: "gmail",
-        port: 25,
-        auth: {
-          user: "xxxx@gmail.com",
-          pass: "xxxxxxx",
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
-
-      const message = {
-        from: "noreply@goidux.com", // Sender address
-        to: email, // List of recipients
-        subject: "OTP for your Travitime sign-in", // Subject line
-        text: `Please use the otp ${otp}`, // Plain text body
-      };
-
-      let sendMsg;
-      transporter.sendMail(message, function (err, info) {
-        if (err) {
-          console.log("error", err);
-          //sendMsg = err.code;
-          sendMsg =
-            "Your account has been created unexpected error occur in creating the activation key please try to activate your account, sorry for the inconvenience";
-        } else {
-          sendMsg = info;
-        }
+      sendActivationMail({
+        op_email : email,
+        op_name:name,
+        op_otp: otp
       });
 
       res.status(200).send({
@@ -184,7 +176,13 @@ exports.travelRegisterCtrl = [
 
         message: "Account Created",
       });
-    });
+    }).then((result) => {
+      console.log("DDDDDDDDDDDDDD");
+      console.log(result);
+   }).catch((e) => {
+    console.log("EEEEEEEEEEEEE");
+    console.log(e);
+   });
   }),
 ];
 
@@ -233,6 +231,7 @@ function validation(message) {
     phone: Joi.number().required(),
     company: Joi.string().required(),
     name: Joi.string().required(),
+    recaptchaToken: Joi.string().required(),
   });
 
   return Schema.validate(message);
@@ -253,3 +252,28 @@ function travelOperatorValidation(message) {
 
   return Schema.validate(message);
 }
+function sendActivationMail(mail_data){
+  const gmailTransport = MailConfig.GmailTransport;
+  MailConfig.ViewOption(gmailTransport,hbs);
+  let HelperOptions = {
+    from: '"Travitime" <noreply@goidux.com>',
+    to: mail_data.op_email,
+    subject: 'OTP for your Travitime sign-in',
+    template: 'op_send_acc_activation_code',
+    context: {
+      operator_name:mail_data.op_name,
+      activation_code: mail_data.op_otp
+    }
+  };
+  gmailTransport.sendMail(HelperOptions, (error,info) => {
+    if(error) {
+      console.log("account activation email is NOT sent");
+      console.log(error);
+    }
+    else{
+      console.log("account activation email is sent");
+      // console.log(info);
+    }
+  });
+}
+    
