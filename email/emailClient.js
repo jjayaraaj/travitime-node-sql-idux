@@ -6,19 +6,19 @@ module.exports.GmailTransport = nodemailer.createTransport({
     secure:false,
     port: 587,
     auth: {
-        user: "career.saravanakumar@gmail.com",
-        pass: "PASWORD_HERE"
+        user: "travitimeapp@gmail.com",
+        pass: "Travitime632@"
     }
 });
 
 module.exports.SMTPTransport = nodemailer.createTransport({
-    host: "SMTP_SERVICE_HOST",
-    port: "SMTP_SERVICE_PORT",
-    secure: "SMTP_SERVICE_SECURE", // upgrade later with STARTTLS
+    host: "smtpout.secureserver.net",
+    port: 465,
+    secure:true, // upgrade later with STARTTLS
     debug: true,
     auth: {
-        user: "SMTP_USER_NAME",
-        pass: "SMTP_USER_PASSWORD"
+        user: "info@goidux.com",
+        pass: "GoIdux@321"
     }
 });
 

@@ -15,13 +15,13 @@ const sequelize = require("../util/database");
 const operator = require("../middleware/operator");
 
 const googleApiSrv = require("../network/apiService/googleApi");
+const logger = require('../logger/logger')
 
 exports.travelRegisterCtrl_old = [
   asyncMiddleware(async (req, res, next) => {
     const { error } = travelOperatorValidation(req.body);
     if (error) throw new ErrorHandler(400, error.details[0].message);
-    console.log("asdasad");
-
+    logger.error('logger working fine: ', null)
     let user = TravelOperator.findOne({
       where: {
         email: email,
@@ -83,6 +83,7 @@ exports.travelRegisterCtrl = [
     const { error } = validation(req.body);
     if (error) throw new ErrorHandler(400, error.details[0].message);
 
+    logger.error('logger working fine: ', null)
     const email = req.body.email;
     const password = req.body.password;
     const phone = req.body.phone;
@@ -189,35 +190,28 @@ exports.travelRegisterCtrl = [
 exports.activateCtrl = [
   operatorMiddleware,
   asyncMiddleware(async (req, res, next) => {
-    const { email } = req.body;
-
-    // const user = await operator.findOne({
-    //   where: {
-    //     id: decodedToken.id,
-    //     otp: decodedToken.otp,
-    //   },
-    //   //attributes: ["id", "email"],
-    // });
-
+    const token = req.body.token;
+    const decodedToken = jwt.verify(token, "travitime_JWT_#654321!");
     const operator = await TravelOperator.findOne({
       where: {
-        email: email,
-        // otp: decodedToken.otp,
+        otp: decodedToken.otp,
+        email: decodedToken.email,
+        isActive : 0
       },
       //attributes: ["id", "email"],
     });
-
+    
     if (!operator || operator.isActive === 1)
       return res
         .status(400)
-        .send("Not a valid token or already account has been activated");
+        .json({"msg":"Not a valid token or already account has been activated"});
 
     operator.isActive = 1;
     operator.otp = 0;
     operator.save();
 
     // console.log("activate", req.session.operator);
-    res.status(200).send({
+    res.status(200).json({
       message: "activated",
       code: 1,
     });
@@ -253,8 +247,16 @@ function travelOperatorValidation(message) {
   return Schema.validate(message);
 }
 function sendActivationMail(mail_data){
-  const gmailTransport = MailConfig.GmailTransport;
-  MailConfig.ViewOption(gmailTransport,hbs);
+  const encodedToken = jwt.sign(
+    { 
+      otp: mail_data.op_otp, 
+      email : mail_data.op_email
+    },
+    "travitime_JWT_#654321!"
+  );
+  const mailTransport = MailConfig.GmailTransport;
+  // const mailTransport = MailConfig.SMTPTransport;
+  MailConfig.ViewOption(mailTransport,hbs);
   let HelperOptions = {
     from: '"Travitime" <noreply@goidux.com>',
     to: mail_data.op_email,
@@ -262,10 +264,10 @@ function sendActivationMail(mail_data){
     template: 'op_send_acc_activation_code',
     context: {
       operator_name:mail_data.op_name,
-      activation_code: mail_data.op_otp
+      activation_code: encodedToken
     }
   };
-  gmailTransport.sendMail(HelperOptions, (error,info) => {
+  mailTransport.sendMail(HelperOptions, (error,info) => {
     if(error) {
       console.log("account activation email is NOT sent");
       console.log(error);

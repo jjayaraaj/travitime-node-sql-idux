@@ -21,6 +21,7 @@
     "nodemailer": "^6.6.3",
     "nodemailer-express-handlebars": "^4.0.0",
     "otp-generator": "^2.0.1",
-    "sequelize": "^6.6.2"
+    "sequelize": "^6.6.2",
+    "winston": "^3.3.3"
   }
 }
