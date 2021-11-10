@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon app.js",
+    "serve": "nodemon app.js"
   },
   "author": "idux",
   "license": "ISC",
@@ -20,8 +21,10 @@
     "mysql2": "^2.2.5",
     "nodemailer": "^6.6.3",
     "nodemailer-express-handlebars": "^4.0.0",
+    "nodemon": "^2.0.14",
     "otp-generator": "^2.0.1",
     "sequelize": "^6.6.2",
+    "socket.io": "^4.3.1",
     "winston": "^3.3.3"
   }
 }

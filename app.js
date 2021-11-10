@@ -6,11 +6,15 @@ const { handleError } = require("./util/error");
 
 const TravelOperator = require("./models/travel-operators");
 const travelRouter = require("./routes/travel-operators");
+const tourRouter = require("./routes/tour");
 const authRouter = require("./routes/auth");
 
 const app = express();
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 
 // app.use(
 //   session({
@@ -25,6 +29,7 @@ app.use(cors);
 
 //routers
 app.use("/api/traveloperator", travelRouter);
+app.use("/api/tour", tourRouter);
 app.use("/api/auth", authRouter);
 
 //error handler
@@ -38,7 +43,23 @@ sequelize
   //.sync({ alter: true })
   //.sync({ force: true })
   .then((result) => {
-    console.log(result);
+    const httpServer = createServer(app);
+    const io = new Server(httpServer, { 
+      cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"]
+      }
+     });
+    io.on("connection", (socket) => {
+      console.log("User connected in soccket");
+      socket.on('message', (msg) => {
+        console.log(msg);
+        socket.broadcast.emit('message-broadcast', msg);
+       });
+    });
+    httpServer.listen(3001, () => {
+      console.log(`Socket Listening in 3001...`);
+    });
     app.listen(port, () => {
       console.log(`Listening in ${port}...`);
     });
