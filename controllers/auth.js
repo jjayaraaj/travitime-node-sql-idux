@@ -20,7 +20,8 @@ exports.loginCtrl = [
         email: email,
       },
     });
-
+    console.log('Login operator ----->>>>>>>>>>>');
+    // console.log(operator);
     if (!operator) throw new ErrorHandler(400, "Invalid username");
 
     const validPassword = await bcrypt.compare(password, operator.password);
@@ -39,10 +40,9 @@ exports.loginCtrl = [
       company: operator.company,
     };
 
-    const token = jwt.sign(operatorDetail, process.env.JWT_KEY);
+    const token = jwt.sign(operatorDetail, "travitime_JWT_#654321!");
     operatorDetail.token = token;
 
-    //  console.log("operator detail", operatorDetail);
     res.status(200).send({
       operatorDetail,
     });
